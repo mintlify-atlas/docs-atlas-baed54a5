@@ -1,97 +1,110 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "AgentHeaven"
+description: "Ask not what your agents can do for you, ask what you can do for your agents."
 ---
 
-## Setting up
+<Warning>
+  AgentHeaven is in active experimental development. Features may change. **Not ready for stable deployment.**
+</Warning>
 
-Get your documentation site up and running in minutes.
+AgentHeaven is a comprehensive Python SDK and CLI for building and managing AI agent projects. It provides LLM abstraction, environment isolation, knowledge base management, caching, and agentic programming utilities — all in one cohesive package.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Install AgentHeaven via pip, uv, poetry, or conda with optional feature extras.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get a working agent running in under five minutes.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="CLI Guide" icon="terminal" href="/cli/overview">
+    Use the `ahvn` CLI to manage configs, chat with LLMs, and initialize repos.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="API Reference" icon="code" href="/api/llm">
+    Explore the full Python API for LLM, Cache, Tools, Agents, and more.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## Why AgentHeaven?
 
-Everything you need to create world-class documentation.
+AgentHeaven brings a conda-inspired project management philosophy to AI agent development. Instead of wiring together LLM clients, vector stores, and caching layers manually, AgentHeaven provides a unified, batteries-included toolkit.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+<CardGroup cols={2}>
+  <Card title="LLM Abstraction" icon="brain">
+    One interface for OpenAI, OpenRouter, DeepSeek, Ollama, and any LiteLLM-compatible provider. Switch models without changing code.
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
+  <Card title="Knowledge Base" icon="database">
+    KLStore + KLEngine + KLBase compose into a powerful knowledge management layer with vector, facet, MongoDB, and DAAC search engines.
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
+  <Card title="Agentic Programming" icon="wand-magic-sparkles">
+    `@autocode`, `@autofunc`, and `@autotask` decorators let LLMs implement, wrap, and orchestrate Python functions automatically.
   </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
+  <Card title="Smart Caching" icon="bolt">
+    Multiple cache backends (in-memory, disk, JSON, MongoDB) with a `memoize()` decorator for transparent LLM call caching.
   </Card>
-</Columns>
+  <Card title="Tool System" icon="wrench">
+    `ToolSpec` converts Python functions into structured tool schemas ready for LLM function-calling.
+  </Card>
+  <Card title="Agent Framework" icon="robot">
+    `BaseAgentSpec` provides a streaming-first, multi-step agent loop with tool use, user proxy, and configurable termination.
+  </Card>
+</CardGroup>
 
-## Need inspiration?
+## Core components
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+```
+ahvn/
+├── llm/          LLM abstraction (oracle, stream, embed, tooluse)
+├── cache/        Cache backends (InMemCache, DiskCache, JsonCache, MongoCache)
+├── tool/         ToolSpec & ToolRegistry for function-calling
+├── ukf/          Universal Knowledge Fragments (schema types)
+├── klstore/      KL storage backends
+├── klengine/     KL search engines (DAAC, Facet, Vector, Mongo, Scan)
+├── klbase/       KLBase: unified storage + engine manager
+├── agent/        Agent specs (BaseAgentSpec, ConvToolAgentSpec)
+├── cli/          ahvn CLI (setup, config, repo, chat, session, embed)
+└── utils/exts/   Agentic decorators (autocode, autofunc, autotask)
+```
+
+## Quick example
+
+```python quickstart.py
+from ahvn.llm import LLM
+from ahvn.cache import InMemCache
+from ahvn.tool import ToolSpec
+
+# Single-turn LLM call
+llm = LLM(preset="chat")
+response = llm.oracle("Explain what a Fibonacci sequence is in one sentence.")
+print(response)
+
+# Function tool usage
+def multiply(a: int, b: int) -> int:
+    """Multiply two integers."""
+    return a * b
+
+tool = ToolSpec.from_function(multiply)
+
+# Force the model to call the tool and get back the result
+tool_messages = llm.tooluse("What is 42 * 37?", tools=[tool])
+print(tool_messages)
+# [{"role": "tool", "name": "multiply", "content": "1554", ...}]
+
+# Memoized function with cache
+cache = InMemCache()
+
+@cache.memoize()
+def fibonacci(n: int) -> int:
+    """Compute the nth Fibonacci number."""
+    return n if n <= 1 else fibonacci(n - 2) + fibonacci(n - 1)
+
+print(fibonacci(32))  # cached after first call
+```
+
+<CardGroup cols={2}>
+  <Card title="Configuration guide" icon="gear" href="/configuration/overview">
+    Set up LLM providers and global/local config.
+  </Card>
+  <Card title="Python guide" icon="python" href="/guides/llm">
+    Deep-dive into the Python SDK: LLM, agents, knowledge base, and caching.
+  </Card>
+</CardGroup>
